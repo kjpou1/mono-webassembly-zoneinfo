@@ -1,10 +1,10 @@
 TOP=$(realpath $(CURDIR))
 
-all: build
-
 TZ_INPUT=$(TOP)/zoneinfodata
 TZ_OUTPUT=$(TOP)/zoneinfo
 
+.PHONY: all
+all: build
 
 #
 # Targets for building time zone data
@@ -50,11 +50,20 @@ copy-version:
 	cp $(TZ_INPUT)/version $(TZ_OUTPUT)/version
 
 create-zone-module:
-	(cd src && dotnet run -i ../zoneinfo -o ../mono-webassembly-zoneinfo.js)
+	$(RM) -r dist
+	mkdir dist
+	(cd src && dotnet run -i ../zoneinfo -o ../dist/mono-webassembly-zoneinfo.js)
 
-build: build-tz-data copy-version create-zone-module
+.PHONY: dist
+dist:
+	npm install
+	node ./node_modules/.bin/uglifyjs dist/mono-webassembly-zoneinfo.js -m -o dist/mono-webassembly-zoneinfo.min.js
+
+build: build-tz-data copy-version create-zone-module dist
 
 clean: 
-	$(RM) -rf $(TZ_INPUT) $(TZ_OUTPUT)
-	$(RM) -rf src/bin src/obj
+	$(RM) -r $(TZ_INPUT) $(TZ_OUTPUT)
+	$(RM) -r src/bin src/obj
+	$(RM) -r node_modules
+	$(RM) -r dist
 

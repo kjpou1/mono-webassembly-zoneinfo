@@ -1,0 +1,28 @@
+{
+  "name": "mono-webassembly-zoneinfo",
+  "version": "1.0.0",
+  "description": "Support module for time zone database for Mono WebAssembly TimeZoneInfo support.",
+  "main": "mono-webassembly-zoneinfo.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kjpou1/mono-webassembly-zoneinfo.git"
+  },
+  "keywords": [
+    "mono",
+    "webassembly",
+    "wasm",
+    "mono-wasm"
+  ],
+  "author": "Kenneth Pouncey",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kjpou1/mono-webassembly-zoneinfo/issues"
+  },
+  "homepage": "https://github.com/kjpou1/mono-webassembly-zoneinfo#readme",
+  "dependencies": {
+    "uglify-es": "^3.3.9"
+  }
+}
