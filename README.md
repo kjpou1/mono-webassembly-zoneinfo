@@ -34,3 +34,16 @@ The following warning may be seen depending on the operating system.  `warning: 
 safely be ignored on today's platforms, as the warnings refer to a restriction
 in POSIX.1-1988 that was removed in POSIX.1-2001. One way to suppress the
 warnings is to upgrade to zic derived from tz releases 2015f and later.
+
+
+
+
+debug no force file-system
+mono.js             504559      505 KB
+mono.wasm           9621131     9.6 MB
+mono.wasm.map       743837   744KB
+
+release no force file-system
+mono.js             210138      210 KB
+mono.wasm           1739017     1.7 MB
+

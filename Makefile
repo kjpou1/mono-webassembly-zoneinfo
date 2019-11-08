@@ -3,6 +3,9 @@ TOP=$(realpath $(CURDIR))
 TZ_INPUT=$(TOP)/zoneinfodata
 TZ_OUTPUT=$(TOP)/zoneinfo
 
+EMSCRIPTEN_LOCAL_SDK_DIR=$(TOP)/emsdk
+EMSCRIPTEN_SDK_DIR ?= $(EMSCRIPTEN_LOCAL_SDK_DIR)
+
 .PHONY: all
 all: build
 
@@ -59,11 +62,34 @@ dist:
 	npm install
 	node ./node_modules/.bin/uglifyjs dist/mono-webassembly-zoneinfo.js -m -o dist/mono-webassembly-zoneinfo.min.js
 
-build: build-tz-data copy-version create-zone-module dist
+build: build-tz-data copy-version create-zone-module dist package-zoneinfo
+
+$(TOP)/emsdk:
+	# Get the emsdk repo
+	git clone https://github.com/emscripten-core/emsdk.git $(EMSCRIPTEN_SDK_DIR)
+
+.stamp-wasm-checkout-and-update-emsdk: | $(EMSCRIPTEN_SDK_DIR)
+	cd $(TOP)/emsdk && git reset --hard && git clean -xdff && git pull
+	touch $@
+
+.stamp-wasm-install-and-select-latest: .stamp-wasm-checkout-and-update-emsdk
+	# Download and install the latest SDK tools.
+	cd $(TOP)/emsdk && ./emsdk install latest
+	# Make the "latest" SDK "active" for the current user. (writes ~/.emscripten file)
+	cd $(TOP)/emsdk && ./emsdk activate latest
+	# Activate PATH and other environment variables in the current terminal
+	cd $(TOP)/emsdk && source ./emsdk_env.sh
+	touch $@
+
+package-zoneinfo: .stamp-wasm-install-and-select-latest
+	python emsdk/upstream/emscripten/tools/file_packager.py dist/zoneinfo.data --preload zoneinfo --no-heap-copy --js-output=dist/mono-webassembly-zoneinfo-fs.js
+	python emsdk/upstream/emscripten/tools/file_packager.py dist/zoneinfo.data --preload zoneinfo --no-heap-copy --separate-metadata --js-output=dist/mono-webassembly-zoneinfo-fs-smd.js
 
 clean: 
 	$(RM) -r $(TZ_INPUT) $(TZ_OUTPUT)
 	$(RM) -r src/bin src/obj
 	$(RM) -r node_modules
 	$(RM) -r dist
+	$(RM) -r emsdk
+	$(RM) .stamp*
 
