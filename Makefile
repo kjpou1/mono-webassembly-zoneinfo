@@ -82,8 +82,8 @@ $(TOP)/emsdk:
 	touch $@
 
 package-zoneinfo: .stamp-wasm-install-and-select-latest
-	python emsdk/upstream/emscripten/tools/file_packager.py dist/zoneinfo.data --preload zoneinfo --no-heap-copy --js-output=dist/mono-webassembly-zoneinfo-fs.js
-	python emsdk/upstream/emscripten/tools/file_packager.py dist/zoneinfo.data --preload zoneinfo --no-heap-copy --separate-metadata --js-output=dist/mono-webassembly-zoneinfo-fs-smd.js
+	python emsdk/upstream/emscripten/tools/file_packager.py dist/zoneinfo.data --preload zoneinfo --js-output=dist/mono-webassembly-zoneinfo-fs.js
+	python emsdk/upstream/emscripten/tools/file_packager.py dist/zoneinfo.data --preload zoneinfo --separate-metadata --js-output=dist/mono-webassembly-zoneinfo-fs-smd.js
 
 clean: 
 	$(RM) -r $(TZ_INPUT) $(TZ_OUTPUT)
