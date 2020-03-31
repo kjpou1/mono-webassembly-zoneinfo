@@ -6,6 +6,12 @@ TZ_OUTPUT=$(TOP)/zoneinfo
 EMSCRIPTEN_LOCAL_SDK_DIR=$(TOP)/emsdk
 EMSCRIPTEN_SDK_DIR ?= $(EMSCRIPTEN_LOCAL_SDK_DIR)
 
+FILEPACKAGER_LOCAL_DIR=$(TOP)/file-packager
+FILEPACKAGER_DLL_DIR=$(FILEPACKAGER_LOCAL_DIR)/src/bin
+FILEPACKAGER_SRC_FILES=$(FILEPACKAGER_LOCAL_DIR)/src/Program.cs
+FILEPACKAGER_PRJ_DIR ?= $(FILEPACKAGER_LOCAL_DIR)/src
+
+
 .PHONY: all
 all: build
 
@@ -52,17 +58,19 @@ $(eval $(call TZExtractTemplate,$(TZ_INPUT),$(TZ_OUTPUT),backward))
 copy-version: 
 	cp $(TZ_INPUT)/version $(TZ_OUTPUT)/version
 
-create-zone-module:
-	$(RM) -r dist
-	mkdir dist
-	(cd src && dotnet run -i ../zoneinfo -o ../dist/mono-webassembly-zoneinfo.js)
-
 .PHONY: dist
 dist:
+	mkdir -p $@
+
+create-zone-module: | dist
+	(cd src && dotnet run -i ../zoneinfo -o ../dist/mono-webassembly-zoneinfo.js)
+
+.PHONY: minify
+minify:
 	npm install
 	node ./node_modules/.bin/uglifyjs dist/mono-webassembly-zoneinfo.js -m -o dist/mono-webassembly-zoneinfo.min.js
 
-build: build-tz-data copy-version create-zone-module dist package-zoneinfo
+build: build-tz-data copy-version create-zone-module minify package-zoneinfo
 
 $(TOP)/emsdk:
 	# Get the emsdk repo
@@ -81,15 +89,31 @@ $(TOP)/emsdk:
 	cd $(TOP)/emsdk && source ./emsdk_env.sh
 	touch $@
 
-package-zoneinfo: .stamp-wasm-install-and-select-latest
-	python emsdk/upstream/emscripten/tools/file_packager.py dist/zoneinfo.data --preload zoneinfo --js-output=dist/mono-webassembly-zoneinfo-fs.js
-	python emsdk/upstream/emscripten/tools/file_packager.py dist/zoneinfo.data --preload zoneinfo --separate-metadata --js-output=dist/mono-webassembly-zoneinfo-fs-smd.js
+$(TOP)/file-packager:
+	# Get the file packager repo
+	git clone https://github.com/kjpou1/Mono.WebAssembly.FilePackager.git $(FILEPACKAGER_LOCAL_DIR)
+
+.stamp-filepackager-checkout-and-update: | $(FILEPACKAGER_LOCAL_DIR)
+	cd $(FILEPACKAGER_LOCAL_DIR) && git reset --hard && git clean -xdff && git pull
+	touch $@
+
+.stamp-filepackager-install-and-build: .stamp-filepackager-checkout-and-update $(FILEPACKAGER_SRC_FILES)
+	# Make the file packager project
+	cd $(FILEPACKAGER_PRJ_DIR) && dotnet publish Mono.WebAssembly.FilePackager.sln -c Release
+
+package-zoneinfo: build-tz-data copy-version .stamp-filepackager-install-and-build | dist
+	#dotnet run --project $(FILEPACKAGER_PRJ_DIR)/Mono.WebAssembly.FilePackager.csproj -t dist/zoneinfo.data --preload zoneinfo --no-heap-copy --js-output=dist/mono-webassembly-zoneinfo-fs.js
+	dotnet run --project $(FILEPACKAGER_PRJ_DIR)/Mono.WebAssembly.FilePackager.csproj -t dist/zoneinfo.data-fs --preload zoneinfo --no-heap-copy --separate-metadata --js-output=dist/mono-webassembly-zoneinfo-fs-smd.js
+
+package-zoneinfo-emsdk: build-tz-data copy-version .stamp-wasm-install-and-select-latest | dist
+	#python emsdk/upstream/emscripten/tools/file_packager.py dist/zoneinfo.data --preload zoneinfo --no-heap-copy --js-output=dist/mono-webassembly-zoneinfo-fs-emsdk.js
+	python emsdk/upstream/emscripten/tools/file_packager.py dist/zoneinfo.data --preload zoneinfo --no-heap-copy --separate-metadata --js-output=dist/mono-webassembly-zoneinfo-fs-emsdk-smd.js
 
 clean: 
 	$(RM) -r $(TZ_INPUT) $(TZ_OUTPUT)
 	$(RM) -r src/bin src/obj
 	$(RM) -r node_modules
 	$(RM) -r dist
-	$(RM) -r emsdk
+	$(RM) -r file-packager
 	$(RM) .stamp*
 

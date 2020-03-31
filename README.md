@@ -7,7 +7,7 @@ The purpose of this module is to only support the TimeZone database information 
 
 ## Build Requirements
 
-Operating system that supports the `zic` command that will generate the zone database files.
+Operating system that supports the `zic`<sup>[1](#zic1)</sup> command that will generate the zone database files.
 
 ## Executing
 
@@ -47,3 +47,4 @@ release no force file-system
 mono.js             210138      210 KB
 mono.wasm           1739017     1.7 MB
 
+<a name="zic1">1</a>: [zic - timezone compiler](http://man7.org/linux/man-pages/man8/zic.8.html)
