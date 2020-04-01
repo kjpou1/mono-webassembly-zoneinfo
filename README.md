@@ -54,6 +54,20 @@ For example Europe/Luxembourg:
 
 Notice the separating `@` symbol that tells the packager how to target is to be directed.
 
+## Specifying and loading the Timezone information.
+
+
+1. Add a reference to the timezone information javascript file. 
+
+``` js
+    <script src="mono-webassembly-zoneinfo-europe-luxembourg-fs.js" type="text/javascript"></script>
+    <script src="mono-webassembly-zoneinfo-northamerica-and-us-fs.js" type="text/javascript"></script>
+```
+
+1. Make sure that the corresponding `.data` file is also available and being served from the same uri location.
+
+In the above example the timezone information that will be loaded will be for `Europe/Luxembourg` as well as for `northamerica` contenant including the `US` deprecated backwards compatibility links.
+
 ## Warnings
 
 The following warning may be seen depending on the operating system.  `warning: time zone abbreviation differs from POSIX standard`.
