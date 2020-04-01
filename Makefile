@@ -48,7 +48,7 @@ build-tz-data: zic/$(3)
 build-tz-data-$(3): zic/$(3)-$(3)
 
 package-zoneinfo-$(3): build-tz-data-$(3) copy-version .stamp-filepackager-install-and-build | dist
-	dotnet run --project $(FILEPACKAGER_PRJ_DIR)/Mono.WebAssembly.FilePackager.csproj -t dist/zoneinfo-$(3).data --preload zoneinfo-$(3) --no-heap-copy --js-output=dist/mono-webassembly-zoneinfo-$(3)-fs.js
+	dotnet run --project $(FILEPACKAGER_PRJ_DIR)/Mono.WebAssembly.FilePackager.csproj -t dist/zoneinfo-$(3).data --preload zoneinfo-$(3)@zoneinfo --no-heap-copy --js-output=dist/mono-webassembly-zoneinfo-$(3)-fs.js
 
 endef
 
