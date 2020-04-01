@@ -63,6 +63,19 @@ $(eval $(call TZExtractTemplate,$(TZ_INPUT),$(TZ_OUTPUT),northamerica))
 $(eval $(call TZExtractTemplate,$(TZ_INPUT),$(TZ_OUTPUT),southamerica))
 $(eval $(call TZExtractTemplate,$(TZ_INPUT),$(TZ_OUTPUT),backward))
 
+
+# US tz is deprecated and included with the 'backward' info but am including it here as an example.
+# For example US/Eastern is a link to America/New_York reference: https://en.wikipedia.org/wiki/List_of_tz_database_time_zones
+package-zoneinfo-northamerica-and-US: build-tz-data build-tz-data-northamerica copy-version .stamp-filepackager-install-and-build | dist
+	rm -rf ./zoneinfo-northamerica-and-us
+	cp -a ./zoneinfo-northamerica/. ./zoneinfo-northamerica-and-us
+	cp -a ./zoneinfo/US/. ./zoneinfo-northamerica-and-us/US
+	dotnet run --project $(FILEPACKAGER_PRJ_DIR)/Mono.WebAssembly.FilePackager.csproj -t dist/zoneinfo-northamerica-and-us.data --preload zoneinfo-northamerica-and-us@zoneinfo --no-heap-copy --js-output=dist/mono-webassembly-zoneinfo-northamerica-and-us-fs.js	
+
+# The following will only build a file for Europe/Luxembourg
+package-zoneinfo-europe-luxembourg: build-tz-data-europe .stamp-filepackager-install-and-build | dist
+	dotnet run --project $(FILEPACKAGER_PRJ_DIR)/Mono.WebAssembly.FilePackager.csproj -t dist/zoneinfo-europe-luxembourg.data --preload zoneinfo-europe/Europe/Luxembourg@zoneinfo/Europe/Luxembourg --no-heap-copy --js-output=dist/mono-webassembly-zoneinfo-europe-luxembourg-fs.js	
+
 copy-version: 
 	cp $(TZ_INPUT)/version $(TZ_OUTPUT)/version
 
@@ -89,6 +102,8 @@ build:
 	make package-zoneinfo-europe
 	make package-zoneinfo-northamerica
 	make package-zoneinfo-southamerica
+	make package-zoneinfo-northamerica-and-US
+	make package-zoneinfo-europe-luxembourg
 	#make package-zoneinfo-backward
 
 # $(TOP)/emsdk:
