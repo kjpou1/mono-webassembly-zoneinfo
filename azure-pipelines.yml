@@ -14,13 +14,13 @@ variables:
 
 steps:
 - script: make
-  displayName: 'make $(buildConfiguration)'
+  displayName: 'Run make to generate the files.'
 - task: CopyFiles@2
   inputs:
-    sourceFolder: '$(Build.SourcesDirectory)'
-    contents: '**/$(BuildConfiguration)/**/?(*.js|*.data)'
+    sourceFolder: 'dist'
+    contents: '**/?(*.js|*.data)'
     TargetFolder: '$(Build.ArtifactStagingDirectory)'
 - task: PublishBuildArtifacts@1
   inputs:
     pathtoPublish: '$(Build.ArtifactStagingDirectory)'
-    artifactName: drop
+    artifactName: zoneinfo_data
