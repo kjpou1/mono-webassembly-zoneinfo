@@ -15,12 +15,21 @@ variables:
 steps:
 - script: make
   displayName: 'Run make to generate the files.'
-- task: CopyFiles@2
+# - task: CopyFiles@2
+#   inputs:
+#     sourceFolder: 'dist'
+#     contents: '**/?(*.js|*.data)'
+#     TargetFolder: '$(Build.ArtifactStagingDirectory)'
+
+- task: ArchiveFiles@2
   inputs:
-    sourceFolder: 'dist'
-    contents: '**/?(*.js|*.data)'
-    TargetFolder: '$(Build.ArtifactStagingDirectory)'
+    rootFolderOrFile: 'dist'
+    includeRootFolder: false
+    archiveType: 'zip'
+    archiveFile: '$(Build.ArtifactStagingDirectory)/zoneinfo-$(Build.BuildId).zip'
+    replaceExistingArchive: true
+
 - task: PublishBuildArtifacts@1
   inputs:
-    pathtoPublish: '$(Build.ArtifactStagingDirectory)'
+    pathtoPublish: '$(Build.ArtifactStagingDirectory)/zoneinfo-$(Build.BuildId).zip'
     artifactName: zoneinfo_data
